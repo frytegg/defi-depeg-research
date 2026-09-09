@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeFi Peg Failure &amp; Tracking Error — Research Portfolio</title>
+<meta name="description" content="Alexandre Lemière — 16-week research internship on tracking error and depeg mechanics across ~20 DeFi synthetic-asset protocols.">
+<style>
+  :root{
+    --navy:#1B2A4A; --navy-2:#28406e; --teal:#2E7D6B; --rust:#C0533A;
+    --bg:#F7F7F5; --panel:#FFFFFF; --text:#20242c; --muted:#5b6472;
+    --border:#e4e2dc; --link:#1B2A4A; --chip-bg:#eef1f6;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#12151c; --panel:#191d26; --text:#e7e9ee; --muted:#9aa3b2;
+      --border:#2a2f3a; --link:#8fb2ff; --chip-bg:#1f2530; --navy:#3a5488;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;
+  }
+  a{color:var(--link);}
+  .wrap{max-width:980px; margin:0 auto; padding:0 20px;}
+  header.hero{
+    background:linear-gradient(135deg,var(--navy),var(--navy-2));
+    color:#fff; padding:52px 0 40px;
+  }
+  header.hero .kicker{
+    font-size:12.5px; letter-spacing:.06em; text-transform:uppercase;
+    color:#c9d3e3; font-weight:600; margin-bottom:10px;
+  }
+  header.hero h1{font-size:clamp(26px,4vw,38px); margin:0 0 14px; line-height:1.15;}
+  header.hero p.lede{font-size:16px; color:#dbe1ee; max-width:720px; margin:0 0 22px;}
+  .badges{display:flex; flex-wrap:wrap; gap:10px;}
+  .badge{
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25);
+    color:#fff; padding:7px 13px; border-radius:999px; font-size:13.5px;
+    text-decoration:none;
+  }
+  .badge:hover{background:rgba(255,255,255,.2);}
+  .badge.primary{background:var(--rust); border-color:var(--rust);}
+  .badge.primary:hover{background:#a8452e;}
+
+  main{padding:36px 0 60px;}
+  .callout{
+    background:var(--panel); border:1px solid var(--border); border-left:4px solid var(--rust);
+    border-radius:10px; padding:20px 22px; margin:0 0 34px;
+  }
+  .callout h2{margin:0 0 8px; font-size:17px;}
+  .callout p{margin:0; color:var(--muted); font-size:15px;}
+
+  h2.section-title{
+    font-size:13px; text-transform:uppercase; letter-spacing:.07em;
+    color:var(--muted); font-weight:700; margin:38px 0 14px;
+    border-bottom:1px solid var(--border); padding-bottom:8px;
+  }
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px;}
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:10px;
+    padding:16px 18px; display:flex; flex-direction:column; gap:8px;
+  }
+  .card h3{margin:0; font-size:15.5px;}
+  .card p{margin:0; color:var(--muted); font-size:13.8px; flex:1;}
+  .card .links{display:flex; gap:8px; margin-top:4px; flex-wrap:wrap;}
+  .pill{
+    font-size:12.5px; font-weight:600; text-decoration:none;
+    background:var(--chip-bg); color:var(--text); padding:5px 11px; border-radius:7px;
+    border:1px solid var(--border);
+  }
+  .pill:hover{border-color:var(--teal); color:var(--teal);}
+  .pill.fr{opacity:.85;}
+
+  footer{
+    border-top:1px solid var(--border); padding:28px 0 50px; color:var(--muted); font-size:13.5px;
+  }
+  footer p{max-width:760px;}
+  footer a{color:var(--muted); text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">Alexandre Lemière — Research Portfolio</div>
+    <h1>DeFi Peg Failure &amp; Tracking Error, across ~20 protocols</h1>
+    <p class="lede">Sixteen weeks (May–Aug 2026) building an audited, from-scratch on-chain
+      data pipeline and applying econometrics, machine learning, reinforcement learning
+      and graph theory to how — and why — synthetic assets lose their peg.</p>
+    <div class="badges">
+      <a class="badge primary" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/internship_report/Internship_Report_Alexandre_Lemiere.pdf">📄 Read the Internship Report (71pp)</a>
+      <a class="badge" href="https://github.com/frytegg/defi-depeg-research">GitHub repo</a>
+      <a class="badge" href="https://linkedin.com/in/alexandre-lemiere">LinkedIn</a>
+      <a class="badge" href="https://github.com/frytegg">GitHub profile</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="callout">
+    <h2>What this is</h2>
+    <p>Twenty self-contained technical reports — each a full data audit, tracking-error
+      decomposition, and findings writeup with figures and references — sitting under one
+      umbrella report and one evaluation standard applied throughout: pre-registered gates,
+      adversarial self-audits, and negative results reported as plainly as positive ones.
+      All results are computed from public on-chain and exchange data; no proprietary
+      information from the host company is reproduced anywhere here.</p>
+  </div>
+
+  <h2 class="section-title">Full collateral (CDP-backed)</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>MakerDAO — DAI</h3>
+      <p>Survived the March 2020 liquidation cascade <em>and</em> the March 2023 SVB
+        contagion. During SVB the push oracle floored at $0.88 while the market traded to
+        $0.810 — a 697bp gap invisible to a single-oracle circuit breaker.</p>
+      <div class="links"><a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/maker/dai/main.pdf">PDF</a></div>
+    </div>
+    <div class="card">
+      <h3>Liquity — LUSD</h3>
+      <p>Structurally premium-biased peg; the $1 redemption floor binds hard, with
+        redemption intensity 7–8× higher below par than above.</p>
+      <div class="links"><a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/liquity/lusd/main.pdf">PDF</a></div>
+    </div>
+    <div class="card">
+      <h3>Curve — crvUSD</h3>
+      <p>PegKeeper-defended, slightly sub-peg by design. Egorov's insulation architecture
+        holds up empirically: stress routes into the LLAMMA soft-liquidation mechanism,
+        not into the peg itself.</p>
+      <div class="links"><a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/curve/crvusd/main.pdf">PDF</a></div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Partial / algorithmic collateral</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Iron Finance — IRON/TITAN</h3>
+      <p>Full forensic reconstruction of the June 2021 collapse: TITAN's supply inflated
+        ~335,000× in ~24 hours. Only 1 of 8 pre-registered early-warning signals carried
+        real information.</p>
+      <div class="links"><a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/iron_finance/iron/main.pdf">PDF</a></div>
+    </div>
+    <div class="card">
+      <h3>FRAX — V1</h3>
+      <p>The survivor half of the Iron Finance comparison: near-identical contract logic,
+        but FRAX raised its collateral ratio +8pp under stress while Iron let it fall
+        −25.7pp — and only one protocol is still alive.</p>
+      <div class="links"><a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/frax/v1/main.pdf">PDF</a></div>
+    </div>
+    <div class="card">
+      <h3>Terra — UST</h3>
+      <p>Full reconstruction of the May 2022 collapse of the (then) third-largest
+        stablecoin. A DebtRank systemic-risk replay overshoots the real loss by 1.3×,
+        because the model has no mechanism for the Luna Foundation Guard's reserve
+        defense.</p>
+      <div class="links">
+        <a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/terra/ust/main.pdf">PDF</a>
+        <a class="pill fr" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/terra/ust/main_fr.pdf">PDF (FR)</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Mirror Protocol</h3>
+      <p>34 synthetic assets (mAssets) on Terra. The Band oracle freeze that silently broke
+        tracking is empirically dated; tracking error is shown to be <em>undefined</em>
+        after 2022-06-01, not zero.</p>
+      <div class="links">
+        <a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/terra/mirror/main.pdf">PDF</a>
+        <a class="pill fr" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/terra/mirror/main_fr.pdf">PDF (FR)</a>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Shared debt pool (Synthetix)</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>sUSD</h3>
+      <p>The base synth of the pool: a soft structural sub-peg (~−0.4% baseline) turned
+        into an acute, still-open depeg starting May 2024 — daily-median trough of $0.593
+        reached February 2026.</p>
+      <div class="links">
+        <a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/synthetix/susd/main.pdf">PDF</a>
+        <a class="pill fr" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/synthetix/susd/main_fr.pdf">PDF (FR)</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Crypto cohort (sETH, sBTC, sLINK…)</h3>
+      <p>Oracle fidelity is essentially perfect across 6 years — the apparent "depeg" is
+        DEX-venue liquidity decay setting in from 2024, not an oracle failure.</p>
+      <div class="links">
+        <a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/synthetix/crypto/main.pdf">PDF</a>
+        <a class="pill fr" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/synthetix/crypto/main_fr.pdf">PDF (FR)</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Equity cohort (sTSLA, sAAPL…)</h3>
+      <p>One flagship offset (sGOOG) is correctly re-attributed from an assumed dividend
+        effect to a genuine, measurable Chainlink feed low-bias.</p>
+      <div class="links">
+        <a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/synthetix/equity/main.pdf">PDF</a>
+        <a class="pill fr" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/synthetix/equity/main_fr.pdf">PDF (FR)</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Commodity / index cohort (sXAU, sXAG, sFTSE, sNIKKEI)</h3>
+      <p>The Wezen-release redemption freeze is dated precisely via a
+        difference-in-differences design.</p>
+      <div class="links">
+        <a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/synthetix/commodity_index/main.pdf">PDF</a>
+        <a class="pill fr" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/synthetix/commodity_index/main_fr.pdf">PDF (FR)</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Inverse cohort (iETH, iBTC…)</h3>
+      <p>Tracking error is the <em>wrong lens</em> here — price is a deterministic clamped
+        formula. The real story: 1,161 clamp episodes and a 2020–2021 freeze cascade (29
+        events) as the bull run pinned every inverse synth to its floor.</p>
+      <div class="links"><a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/synthetix/inverse/main.pdf">PDF</a></div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Fiat-backed (centralized)</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Circle — USDC</h3>
+      <p>Reference stablecoin; full forensic reconstruction of the March 2023 SVB depeg,
+        used as the calibration case for the whole corpus.</p>
+      <div class="links"><a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/circle/usdc/main.pdf">PDF</a></div>
+    </div>
+    <div class="card">
+      <h3>Tether — USDT</h3>
+      <p>Peg fidelity is high in the center but sharply heavy-tailed. The real-time stress
+        signal is the Curve 3pool weight imbalance, not the (opaque, off-chain-backed)
+        oracle.</p>
+      <div class="links"><a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/tether/usdt/main.pdf">PDF</a></div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Liquid staking, index &amp; delta-neutral</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Lido — stETH</h3>
+      <p>Reconstructed through the June 2022 Celsius/3AC contagion; the withdrawal queue's
+        latency is priced — each extra day of queue costs −1.28bp of discount.</p>
+      <div class="links"><a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/lido/steth/main.pdf">PDF</a></div>
+    </div>
+    <div class="card">
+      <h3>GMX — GLP</h3>
+      <p>A NAV-tracking, perpetuals-linked liquidity index. Trading fees couldn't offset
+        basket drawdown; GMX V1 wound down −99.8%.</p>
+      <div class="links"><a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/gmx/glp/main.pdf">PDF</a></div>
+    </div>
+    <div class="card">
+      <h3>Ethena — USDe / sUSDe</h3>
+      <p>2024 launch through the October 2025 Binance oracle-bug case study; a mis-measured
+        "peg improvement" claim is corrected to a real median bias of −4.45bp.</p>
+      <div class="links">
+        <a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/ethena/usde/main.pdf">PDF</a>
+        <a class="pill fr" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/ethena/usde/main_fr.pdf">PDF (FR)</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Resolv — USR</h3>
+      <p>The March 2026 depeg is forensically identified as an AWS-key/opsec breach
+        (~80M unbacked USR illicitly minted) — explicitly <strong>not</strong> a failure of
+        the delta-neutral hedge design.</p>
+      <div class="links">
+        <a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/resolv/usr/main.pdf">PDF</a>
+        <a class="pill fr" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/resolv/usr/main_fr.pdf">PDF (FR)</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Vertex Protocol — perps</h3>
+      <p>Top-3 perpetual markets; tracking error measured against the perp-mid reference
+        rather than a single spot oracle.</p>
+      <div class="links">
+        <a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/vertex/perps/main.pdf">PDF</a>
+        <a class="pill fr" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/vertex/perps/main_fr.pdf">PDF (FR)</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Backed Finance — xStocks</h3>
+      <p>Physically-backed tokenized equities track ~9× tighter than the now-dead synthetic
+        equivalent (0.66% vs 5.8% RMSE) — and survived where the synthetic died at a 2021
+        freeze event.</p>
+      <div class="links"><a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/backed/xstocks/main.pdf">PDF</a></div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Cross-cutting syntheses</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Implied-volatility smirk gate (S8)</h3>
+      <p>The 25-delta BTC/ETH skew carries statistically significant <em>incremental</em>
+        information about stress beyond a DVOL-style index — but an initial claim that it
+        <em>anticipates</em> stress days in advance was retracted after an adversarial
+        self-audit found it was an artifact of a bounded search window.</p>
+      <div class="links">
+        <a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/s8_iv_smirk/main.pdf">PDF</a>
+        <a class="pill fr" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/s8_iv_smirk/main_fr.pdf">PDF (FR)</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Systemic-risk graph theory (S9)</h3>
+      <p>A from-scratch DebtRank contagion model, validated against three real historical
+        collapses before being run at scale. The real cross-protocol dependency graph
+        turns out to be a mostly-disconnected forest — 72 connected components across 110
+        nodes.</p>
+      <div class="links">
+        <a class="pill" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/graphs/s9_closing_report/main.pdf">PDF</a>
+        <a class="pill fr" href="https://raw.githubusercontent.com/frytegg/defi-depeg-research/main/reports/graphs/s9_closing_report/main_fr.pdf">PDF (FR)</a>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Scope &amp; confidentiality.</strong> This research was conducted at
+      Derivalink (on-chain synthetic-asset infrastructure), through the placement agency
+      Acensi, as part of the ESILV engineering programme. Derivalink's own internal
+      research specification and product design are proprietary and are not reproduced
+      anywhere in this repository — every quantitative result here is derived from public
+      on-chain data, public exchange data, or code written during the internship.</p>
+    <p>Shared for portfolio and informational purposes. All content © Alexandre Lemière. ·
+      <a href="https://github.com/frytegg/defi-depeg-research">Repository</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
