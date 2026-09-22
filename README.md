@@ -30,7 +30,7 @@ with figures and references. FR = French edition, where one exists.
 
 | Report | Headline finding | Read |
 |---|---|---|
-| **MakerDAO — DAI** | Survived the March 2020 liquidation cascade *and* the March 2023 SVB contagion; during SVB the push oracle floored at $0.88 while the market traded to $0.810 — a 697bp gap invisible to a single-oracle circuit breaker. | [PDF](reports/maker/dai/main.pdf) |
+| **MakerDAO — DAI** | Survived the March 2020 liquidation cascade *and* the March 2023 SVB contagion; during SVB the Chainlink DAI/USD oracle bottomed at $0.889 while DAI traded down to $0.828 on Curve — a 600+ bp dislocation invisible to a single-oracle circuit breaker (one layer up, USDC's oracle floor of $0.88 sat 697 bp above its $0.810 exchange wick). | [PDF](reports/maker/dai/main.pdf) |
 | **Liquity — LUSD** | Structurally premium-biased peg; the $1 redemption floor binds hard, with redemption intensity 7–8× higher below par than above. | [PDF](reports/liquity/lusd/main.pdf) |
 | **Curve — crvUSD** | PegKeeper-defended, slightly sub-peg by design; Egorov's insulation architecture holds up empirically — stress routes into the LLAMMA soft-liquidation mechanism, not into the peg itself. | [PDF](reports/curve/crvusd/main.pdf) |
 
